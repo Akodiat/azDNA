@@ -14,7 +14,7 @@ find_status_by_user_id_query = ("SELECT status FROM Users WHERE id = %s")
 get_verify_code_query = ("SELECT verifycode FROM Users WHERE id = %s")
 verify_user = ("UPDATE Users SET verified = %s WHERE id = %s")
 get_username_query("SELECT username FROM Users WHERE id = %s")
-delete_unverified = ("DELETE FROM Users WHERE verified = False AND creationDate > %s)
+delete_unverified = ("DELETE FROM Users WHERE verified = False AND creationDate > %s")
 
 def getEmail(userId):
     cursor.execute(find_email_by_user_id_query(userId))
@@ -42,8 +42,11 @@ def getUsername(userId):
 
 #CreationTime in seconds
 def deleteUnverified(CreationTime):
-    cursor.execute(deleted_unverified(int(time.time() - CreationTime)))
-    cnx.commit()
+    try:
+        cursor.execute(deleted_unverified(int(time.time() - CreationTime)))
+        cnx.commit()
+    except:
+        pass
 
 #checks verification code for user
 def verifyUser(userId, VerifyCode):
