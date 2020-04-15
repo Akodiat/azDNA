@@ -80,9 +80,9 @@ def createSlurmJobFile(userId, job_directory, backend, job_name):
     #SBATCH --time=336:00:00               # Time limit hrs:min:sec
     #SBATCH --output=/vagrant/azDNA/{job_output_file}   # Standard output and error log
     cd /vagrant/azDNA/{job_directory}
-    python3 /vagrant/azDNA/EmailScript.py -t 1 -n {username} -u /www.oxdna.org/jobs -d {email} -j {job_name}
+    python3 EmailScript.py -t 1 -n {username} -u /www.oxdna.org/jobs -d {email} -j {job_name}
     oxDNA input
-    python3 /vagrant/azDNA/EmailScript.py -t 3 -n {username} -u /www.oxdna.org/jobs -d {email} -j {job_name}""".format(
+    python3 EmailScript.py -t 3 -n {username} -u /www.oxdna.org/jobs -d {email} -j {job_name}""".format(
     job_directory=job_directory,
     job_output_file=job_output_file,
     backend = backend,

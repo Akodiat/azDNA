@@ -5,6 +5,7 @@ import requests
 import Login
 import Job
 import Register
+import Account
 
 app = Flask(__name__, static_url_path='/static', static_folder="static")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -106,13 +107,13 @@ def verify():
             if (userId and code):
                 #verify the user
                 if(Account.verifyUser(userId, code)):
-                    return send_file("templates/verify/success")
+                    return send_file("templates/verify/success.html")
                 else:
-                    return send_file("templates/verify/fail")
+                    return send_file("templates/verify/fail.html")
             else:
-                return send_file("templates/verify/fail")
+                return send_file("templates/verify/fail.html")
         else:
-            return send_file("templates/verify/fail")
+            return send_file("templates/verify/fail.html")
 
 
 
@@ -125,14 +126,15 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        email = request.form["email"]
 
     if username is not None and password is not None:
-        user_id = Register.registerUser(username, password, email)
+        user_id = Register.registerUser(username, password)
 
-        if(user_id != -1):
-            session["user_id"] = user_id
-            return redirect("/")
+        if(user_id > -1):
+            #session["user_id"] = user_id
+            return redirect("/login")
+        elif(user_id == -2):
+            return "Username already taken"
         else:
             return "Invalid username or password"
 
@@ -151,9 +153,11 @@ def login():
     if username is not None and password is not None:
         user_id = Login.loginUser(username, password)
 
-        if(user_id != -1):
+        if(user_id > -1):
             session["user_id"] = user_id
             return redirect("/")
+        elif(user_id == -2):
+            return "Error, user not verified. Please verify using the link sent to the email you registered with."
         else:
             return "Invalid username or password"
 
@@ -165,8 +169,8 @@ def logout():
     return "You have logged out"
 
 
-    @app.route("/account", methods=["GET"])
-    def account():
+@app.route("/account", methods=["GET"])
+def account():
 
     if session.get("user_id") is None:
         return "You must be logged in to modify your account"
@@ -309,4 +313,4 @@ def index():
     else:
         return redirect("/login")
 
-    app.run(host="0.0.0.0", port=9000)
+    app.run(host="0.0.0.0", port=10000)
