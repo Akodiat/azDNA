@@ -51,10 +51,12 @@ def handle_form():
         "files": files
     }
 
-    if(Job.createJobForUserIdWithData(user_id, job_data)):
-        return "Uploaded!"
-    else:
-        return "Failed! You cannot submit more than two jobs at once."
+	success, error_message = Job.createJobForUserIdWithData(user_id, job_data)
+
+	if success:
+		return "Success"
+	else:
+		return error_message
 
 @app.route('/api/create_analysis/<jobId>', methods=['POST'])
 def create_analysis(jobId):
@@ -126,6 +128,10 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+
+
+    if username[-4:] != ".edu":
+	      return "We are currently only accepting .edu registrations at this time."
 
     if username is not None and password is not None:
         user_id = Register.registerUser(username, password)
@@ -313,4 +319,4 @@ def index():
     else:
         return redirect("/login")
 
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=5000)
