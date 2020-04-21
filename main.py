@@ -6,6 +6,7 @@ import Login
 import Job
 import Register
 import Account
+import Admin
 
 app = Flask(__name__, static_url_path='/static', static_folder="static")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -57,6 +58,23 @@ def handle_form():
 		return "Success"
 	else:
 		return error_message
+
+@app.route('/cancel_job', methods=['POST'])
+def cancel_job():
+	print("Received Cancel Request")
+	if session.get("user_id") is None:
+		return "You must be logged in to cancel their job!"
+
+	json_data = request.get_json()
+	jobId = json_data["jobId"]
+	print("Canceling Job " + jobId)
+	Job.cancelJob(jobId)
+	return "Canceled Job " + jobId
+
+@app.route('/job_status/<jobId>', methods=['GET'])
+def job_status(jobId):
+	status = Job.getJobStatus(jobId)
+	return status
 
 @app.route('/api/create_analysis/<jobId>', methods=['POST'])
 def create_analysis(jobId):
@@ -310,7 +328,48 @@ def getJobOutput(uuid, desired_output):
 
 	return Response(desired_file_contents, mimetype='text/plain')
 
+@app.route("/admin")
+def admin():
+	print("admin page request")
+	userID = session.get("user_id")
+	isAdmin = Admin.checkIfAdmin(userID)
+	print("user: " + str(userID) + " is admin: ")
+	print(isAdmin)
+	if isAdmin == 1:
+		return send_file("templates/admin.html")
+	else:
+		return "You must be an admin to access this page."
 
+@app.route("/admin/recentlyaddedusers")
+def recentlyAddedUsers():
+	newUsers = Admin.getRecentlyAddedUsers()
+	users = tuple(newUsers)
+	return jsonify(users)
+
+@app.route("/admin/promoteToAdmin/<uuid>")
+def promoteToAdmin(uuid):
+	Admin.promoteToAdmin(uuid)
+	return uuid + " promoted to Admin"
+
+@app.route("/admin/promoteToPrivaleged/<uuid>")
+def promoteToPrivaleged(uuid):
+	Admin.promoteToPrivaleged(uuid)
+	return uuid + " promoted to privaleged"
+
+@app.route("/admin/getUserID/<username>")
+def getUserID(username):
+	return jsonify(Admin.getID(username))
+
+
+@app.route("/admin/getUserInfo/<uuid>")
+def getUserJobCount(uuid):
+	userID = uuid
+	#jobCount = Admin.getUserJobCount(uuid)
+	isAdmin = Admin.checkIfAdmin(uuid)
+	isPrivaleged = Admin.checkIfPrivaleged(uuid)
+	info = (isAdmin, isPrivaleged)
+	return jsonify(info)
+	
 @app.route("/")
 def index():
 
@@ -319,4 +378,4 @@ def index():
 	else:
 		return redirect("/login")
 
-	app.run(host="0.0.0.0", port=5000)
+app.run(host="0.0.0.0", port=9000)
