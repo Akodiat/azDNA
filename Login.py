@@ -4,8 +4,6 @@ import mysql.connector
 import time
 import bcrypt
 
-
-
 query = ("SELECT id, password FROM UsersDev WHERE username = %s")
 find_by_user_id_query = ("SELECT id, password FROM UsersDev WHERE id = %s")
 update_password_query = ("UPDATE UsersDev SET password = %s WHERE id = %s")
@@ -34,6 +32,8 @@ def loginUser(username, password):
         else:
             return -1
 
+	cnx.close()
+
     return -1
 
 
@@ -55,6 +55,7 @@ def updatePasssword(userId, old_password, new_password):
 
 			cursor.execute(update_password_query, user_data)
 			cnx.commit()
+			cnx.close()
 
 			return "Password updated"
 
