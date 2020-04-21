@@ -1,7 +1,6 @@
 import os
 from flask import Flask, Response, request, send_file, session, jsonify, redirect
 import requests
-
 import Login
 import Job
 import Register
@@ -107,8 +106,6 @@ def create_analysis(jobId):
 
 	return Job.createAnalysisForUserIdWithJob(userId, jobId)
 
-#return "Analysis created!"
-
 #account verification process
 @app.route("/verify", methods = ["GET"])
 def verify():
@@ -134,8 +131,6 @@ def verify():
 				return send_file("templates/verify/fail.html")
 		else:
 			return send_file("templates/verify/fail.html")
-
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -281,8 +276,6 @@ def get_job_data(job_id):
 	else:
 		return "No job data."
 
-
-
 @app.route("/all_jobs")
 def getJobs():
 
@@ -315,7 +308,7 @@ def getJobOutput(uuid, desired_output):
 		return "You must specify a valid desired output"
 
 
-	user_directory = "jobfiles/" + str(session["user_id"]) + "/"
+	user_directory = "/users/" + str(session["user_id"]) + "/"
 	job_directory =  user_directory + uuid + "/"
 	desired_file_path = job_directory + desired_output_map[desired_output]
 
