@@ -22,26 +22,26 @@ get_job_query = ("SELECT * FROM Jobs WHERE uuid = %s")
 
 
 def startSlurmJob(job_directory, job_id):
-    sbatch_file = job_directory + "sbatch.sh"
+	sbatch_file = job_directory + "sbatch.sh"
 
-    pipe = subprocess.Popen(["sbatch", sbatch_file], stdout=subprocess.PIPE)
+	pipe = subprocess.Popen(["sbatch", sbatch_file], stdout=subprocess.PIPE)
 
-    #trimming the last character to get rid of the trailing linebreak
-    #the \n character
-    output = pipe.communicate()[0].decode("ascii")[:-1]
-    job_number = output.split("job ")[1]
+	#trimming the last character to get rid of the trailing linebreak
+	#the \n character
+	output = pipe.communicate()[0].decode("ascii")[:-1]
+	job_number = output.split("job ")[1]
 
-    return job_number
+	return job_number
 
 def startSlurmAnalysis(job_directory):
-    sbatch_file = job_directory + "sbatch_analysis.sh"
+	sbatch_file = job_directory + "sbatch_analysis.sh"
 
-    pipe = subprocess.Popen(["sbatch", sbatch_file], stdout=subprocess.PIPE)
+	pipe = subprocess.Popen(["sbatch", sbatch_file], stdout=subprocess.PIPE)
 
-    output = pipe.communicate()[0].decode("ascii")[:-1]
-    job_number = output.split("job ")[1]
+	output = pipe.communicate()[0].decode("ascii")[:-1]
+	job_number = output.split("job ")[1]
 
-    return job_number
+	return job_number
 
 def createSlurmAnalysisFile(job_directory, analysis_id):
 	job_output_file = job_directory + "analysis_out.log"
@@ -94,15 +94,15 @@ def createOxDNAInput(parameters, job_directory, input_file_data, is_one_step_job
 	if is_one_step_job:
 		parameters["steps"] = 10
 
-    for (key, value) in parameters.items():
-        input_file_data += str(key) + " = " + str(value) + "\n"
+	for (key, value) in parameters.items():
+		input_file_data += str(key) + " = " + str(value) + "\n"
 
 	  file_name = "input" if not is_one_step_job else "input_one_step"
 	  file_path = job_directory + file_name
 
-    file = open(file_path, "w+")
-    file.write(input_file_data)
-    file.close()
+	file = open(file_path, "w+")
+	file.write(input_file_data)
+	file.close()
 
 
 def createOxDNAFile(input_files, parameters, job_directory):
@@ -119,57 +119,57 @@ def createOxDNAFile(input_files, parameters, job_directory):
 
 
 def createAnalysisForUserIdWithJob(userId, jobId):
-    cursor = cnx.cursor(buffered=True)
+	cursor = cnx.cursor(buffered=True)
 
-    randomAnalysisId = str(uuid.uuid4())
+	randomAnalysisId = str(uuid.uuid4())
 
-    user_directory = "jobfiles/"+str(userId) + "/"
-    job_directory = user_directory + jobId + "/"
+	user_directory = "jobfiles/"+str(userId) + "/"
+	job_directory = user_directory + jobId + "/"
 
-    createSlurmAnalysisFile(job_directory, randomAnalysisId)
-    job_number = startSlurmAnalysis(job_directory)
+	createSlurmAnalysisFile(job_directory, randomAnalysisId)
+	job_number = startSlurmAnalysis(job_directory)
 
-    print("Creating analysis now...")
+	print("Creating analysis now...")
 
-    update_data = (
-        randomAnalysisId,
-        jobId
-    )
+	update_data = (
+		randomAnalysisId,
+		jobId
+	)
 
-    cursor.execute(set_analysis_id_query, update_data)
-    cnx.commit()
+	cursor.execute(set_analysis_id_query, update_data)
+	cnx.commit()
 
-    analysis_data = (
-        int(userId),
-        "analysis",
-        randomAnalysisId,
-        job_number,
-        1,
-        None,
-        int(time.time())
-    )
-    cursor.execute(add_job_query, analysis_data)
-    cnx.commit()
-    cursor.close()
+	analysis_data = (
+		int(userId),
+		"analysis",
+		randomAnalysisId,
+		job_number,
+		1,
+		None,
+		int(time.time())
+	)
+	cursor.execute(add_job_query, analysis_data)
+	cnx.commit()
+	cursor.close()
 
-    return randomAnalysisId
+	return randomAnalysisId
 
 
 def createJobForUserIdWithData(userId, jsonData):
-    #TODO check slurm squeue for currently running jobs
-    cursor = cnx.cursor(buffered=True)
-    randomJobId = str(uuid.uuid4())
+	#TODO check slurm squeue for currently running jobs
+	cursor = cnx.cursor(buffered=True)
+	randomJobId = str(uuid.uuid4())
 
-    user_directory = "jobfiles/"+str(userId) + "/"
-    job_directory = user_directory + randomJobId + "/"
+	user_directory = "jobfiles/"+str(userId) + "/"
+	job_directory = user_directory + randomJobId + "/"
 
-    if not os.path.exists(user_directory):
-        os.mkdir(user_directory)
+	if not os.path.exists(user_directory):
+		os.mkdir(user_directory)
 
-    os.mkdir(job_directory)
+	os.mkdir(job_directory)
 
-    #pass randomJobId to slurm!
-    files = jsonData["files"]
+	#pass randomJobId to slurm!
+	files = jsonData["files"]
 
 
 	#write the top and conf files
@@ -178,9 +178,9 @@ def createJobForUserIdWithData(userId, jsonData):
 		#print(file_directory)
 		file = open(file_path, "w+")
 		file.write(file_data)
-    file.close()
+	file.close()
 
-    parameters = jsonData["parameters"]
+	parameters = jsonData["parameters"]
 
 
 	createOxDNAFile(files, parameters, job_directory)
@@ -202,53 +202,53 @@ def createJobForUserIdWithData(userId, jsonData):
 
 def createJobDictionaryForTuple(data):
 
-    job_id, user_id, job_name, uuid, slurm_id, job_type, analysis_job_id, creation_date = data
+	job_id, user_id, job_name, uuid, slurm_id, job_type, analysis_job_id, creation_date = data
 
-    schema = {
-        "name":job_name,
-        "uuid":uuid,
-        "job_type":job_type,
-        "analysisJobId":analysis_job_id,
-        "creationDate":creation_date,
-    }
+	schema = {
+		"name":job_name,
+		"uuid":uuid,
+		"job_type":job_type,
+		"analysisJobId":analysis_job_id,
+		"creationDate":creation_date,
+	}
 
-    return schema
+	return schema
 
 
 def getJobsForUserId(userId):
 
-    temp_cnx = mysql.connector.connect(user='root', password='', database='azdna')
-    cursor = temp_cnx.cursor(buffered=True)
+	temp_cnx = mysql.connector.connect(user='root', password='', database='azdna')
+	cursor = temp_cnx.cursor(buffered=True)
 
 
-    cursor.execute(get_jobs_query, (int(userId),))
-    result = cursor.fetchall()
+	cursor.execute(get_jobs_query, (int(userId),))
+	result = cursor.fetchall()
 
-    payload = []
+	payload = []
 
-    for data in result:
-        job_data = createJobDictionaryForTuple(data)
-        payload.append(job_data)
+	for data in result:
+		job_data = createJobDictionaryForTuple(data)
+		payload.append(job_data)
 
 
-    cursor.close()
-    temp_cnx.close()
-    return payload
+	cursor.close()
+	temp_cnx.close()
+	return payload
 
 
 def getJobForUserId(jobId, userId):
-    temp_cnx = mysql.connector.connect(user='root', password='', database='azdna')
+	temp_cnx = mysql.connector.connect(user='root', password='', database='azdna')
 
-    cursor = temp_cnx.cursor(buffered=True)
-    cursor.execute(get_job_query, (jobId,))
-    result = cursor.fetchone()
+	cursor = temp_cnx.cursor(buffered=True)
+	cursor.execute(get_job_query, (jobId,))
+	result = cursor.fetchone()
 
-    cursor.close()
-    temp_cnx.close()
-    if(result is not None):
-        return createJobDictionaryForTuple(result)
-    else:
-        return None
+	cursor.close()
+	temp_cnx.close()
+	if(result is not None):
+		return createJobDictionaryForTuple(result)
+	else:
+		return None
 
 
 
